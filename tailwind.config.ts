@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				zencare: {
+					purple: '#8a2be2',
+					dark: '#121212',
+					gray: '#6b7280',
+					light: '#f9fafb'
 				}
+			},
+			backgroundImage: {
+				'gradient-purple': 'linear-gradient(to right, #9333ea, #6366f1)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
