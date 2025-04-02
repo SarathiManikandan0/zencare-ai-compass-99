@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => {
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/index" element={<Index />} />
               <Route path="/chatbot" element={<Chatbot />} />
               <Route path="/survey" element={<Survey />} />
               <Route path="/contact" element={<Contact />} />
