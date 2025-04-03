@@ -11,6 +11,7 @@ import SupportGroupsModal from "@/components/SupportGroupsModal";
 import ResourcesModal from "@/components/ResourcesModal";
 import UserTaskManager from "@/components/UserTaskManager";
 import GoalSetter from "@/components/GoalSetter";
+import ThemeToggle from "@/components/ThemeToggle";
 import { getTasks, addTask, updateTask, deleteTask } from "@/services/api";
 
 // For mock data visualization
@@ -171,14 +172,15 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b">
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="bg-card border-b">
         <div className="container mx-auto py-4 px-4 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold">ZENCARE</h1>
+            <h1 className="text-2xl font-bold text-foreground">ZENCARE</h1>
           </div>
-          <h2 className="text-xl font-semibold">Your Mental Health Dashboard</h2>
-          <div>
+          <h2 className="text-xl font-semibold text-foreground">Your Mental Health Dashboard</h2>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Button variant="outline" asChild>
               <Link to="/">Logout</Link>
             </Button>
@@ -302,7 +304,7 @@ const UserDashboard = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-medium">{rec.title}</h3>
-                      <p className="text-sm text-gray-500">{rec.type}</p>
+                      <p className="text-sm text-muted-foreground">{rec.type}</p>
                       <p className="mt-2">{rec.description}</p>
                     </div>
                     <Button 

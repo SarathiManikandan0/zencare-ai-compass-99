@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { motion } from "framer-motion";
 
 interface LoginQuestionsModalProps {
   isOpen: boolean;
@@ -36,42 +38,50 @@ const LoginQuestionsModal: React.FC<LoginQuestionsModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Welcome back to ZENCARE</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Welcome back to ZENCARE</DialogTitle>
           <DialogDescription>
             Please take a moment to check in with us about how you're feeling today.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-6 py-4">
+        <motion.div 
+          className="space-y-6 py-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
           <div>
             <h3 className="text-sm font-medium mb-3">How are you feeling today?</h3>
-            <div className="flex flex-wrap gap-2">
+            <ToggleGroup type="single" value={mood?.toString()} onValueChange={(value) => setMood(parseInt(value))}>
               {[1, 2, 3, 4, 5].map((value) => (
-                <Button
+                <ToggleGroupItem
                   key={value}
-                  variant={mood === value ? "default" : "outline"}
-                  className={mood === value ? "bg-zencare-purple" : ""}
-                  onClick={() => setMood(value)}
+                  value={value.toString()}
+                  className={mood === value ? "bg-zencare-purple text-white" : ""}
                 >
                   {value === 1 && "Very Low"}
                   {value === 2 && "Low"}
                   {value === 3 && "Neutral"}
                   {value === 4 && "Good"}
                   {value === 5 && "Excellent"}
-                </Button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
           
-          <div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: mood !== null ? 1 : 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <h3 className="text-sm font-medium mb-3">Did you face any challenges since your last login?</h3>
             <Textarea
               value={challenges}
               onChange={(e) => setChallenges(e.target.value)}
               placeholder="Share your thoughts here..."
-              className="min-h-[100px]"
+              className="min-h-[120px]"
             />
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Skip

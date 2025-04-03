@@ -15,6 +15,7 @@ import AppointmentCharts from "@/components/AppointmentCharts";
 import PriorityAlerts from "@/components/PriorityAlerts";
 import TaskManager from "@/components/TaskManager";
 import PatientDetailsModal from "@/components/PatientDetailsModal";
+import ThemeToggle from "@/components/ThemeToggle";
 import { Calendar, XCircle, Clock, Search } from "lucide-react";
 import { 
   getAppointments, 
@@ -208,14 +209,15 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <header className="border-b">
+    <div className="min-h-screen flex flex-col bg-background">
+      <header className="border-b bg-card">
         <div className="container mx-auto py-4 px-4 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-blue-600">ZENCARE</h1>
+            <h1 className="text-2xl font-bold text-foreground">ZENCARE</h1>
           </div>
-          <h2 className="text-xl font-semibold">Admin Dashboard</h2>
-          <div>
+          <h2 className="text-xl font-semibold text-foreground">Admin Dashboard</h2>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Button variant="outline" asChild>
               <Link to="/">Logout</Link>
             </Button>
@@ -226,7 +228,7 @@ const AdminDashboard = () => {
       <main className="flex-grow container mx-auto p-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome 👋</h1>
-          <p className="text-gray-600">Start the day with managing new appointments</p>
+          <p className="text-muted-foreground">Start the day with managing new appointments</p>
         </div>
         
         {/* Stats and Analytics Section */}
@@ -277,7 +279,7 @@ const AdminDashboard = () => {
           </div>
           
           <div className="col-span-1 md:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border">
+            <div className="bg-card rounded-lg shadow-sm border">
               <div className="p-4 border-b flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Recent Appointments</h2>
                 <div className="relative w-64">
@@ -332,10 +334,10 @@ const AdminDashboard = () => {
                             <span
                               className={`px-2 py-1 rounded-full text-xs ${
                                 appointment.status === "scheduled"
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
                                   : appointment.status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
                               }`}
                             >
                               {appointment.status}
@@ -357,7 +359,7 @@ const AdminDashboard = () => {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleStatusChange(appointment.id, "cancelled")}
-                                  className="text-red-500 hover:text-red-700"
+                                  className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                 >
                                   Cancel
                                 </Button>

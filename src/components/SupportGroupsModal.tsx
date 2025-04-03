@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Send, ArrowLeft, Users } from "lucide-react";
 
 interface Message {
   id: string;
@@ -32,6 +34,7 @@ interface SupportGroupsModalProps {
   onClose: () => void;
 }
 
+// Mock data - in a real app, this would come from an API
 const mockedGroups: SupportGroup[] = [
   {
     id: "anxiety",
@@ -95,12 +98,35 @@ const SupportGroupsModal: React.FC<SupportGroupsModalProps> = ({
 }) => {
   const [selectedGroup, setSelectedGroup] = useState<SupportGroup | null>(null);
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [username] = useState(() => `User${Math.floor(Math.random() * 1000)}`);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedGroup) {
+      setMessages(selectedGroup.messages);
+    }
+  }, [selectedGroup]);
+
+  useEffect(() => {
+    // Scroll to bottom when messages change
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (message.trim() && selectedGroup) {
-      // In a real app, this would send to a backend
-      console.log(`Message sent to ${selectedGroup.name}: ${message}`);
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        author: username,
+        content: message.trim(),
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      
+      setMessages((prev) => [...prev, newMessage]);
       setMessage("");
+      
+      // In a real app, this would send the message to a backend/websocket
+      console.log(`Message sent to ${selectedGroup.name}: ${message}`);
     }
   };
 
@@ -108,7 +134,23 @@ const SupportGroupsModal: React.FC<SupportGroupsModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-3xl h-[80vh] max-h-[600px] flex flex-col">
         <DialogHeader>
-          <DialogTitle>{selectedGroup ? selectedGroup.name : "Support Groups"}</DialogTitle>
+          <DialogTitle className="flex items-center">
+            {selectedGroup ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="mr-2"
+                  onClick={() => setSelectedGroup(null)}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                {selectedGroup.name}
+              </>
+            ) : (
+              "Support Groups"
+            )}
+          </DialogTitle>
           <DialogDescription>
             {selectedGroup 
               ? selectedGroup.description 
@@ -129,33 +171,51 @@ const SupportGroupsModal: React.FC<SupportGroupsModalProps> = ({
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-2">{group.description}</p>
-                  <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-1 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
+                    </div>
+                    <Badge variant="outline">Join</Badge>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
           <div className="flex flex-col h-full">
-            <Button 
-              variant="ghost" 
-              className="w-fit mb-4"
-              onClick={() => setSelectedGroup(null)}
-            >
-              ← Back to groups
-            </Button>
+            <div className="flex items-center justify-between mb-4">
+              <Badge variant="outline" className="flex items-center">
+                <Users className="h-3 w-3 mr-1" />
+                {selectedGroup.memberCount} online
+              </Badge>
+              <Badge variant="outline">You are {username}</Badge>
+            </div>
             
             <ScrollArea className="flex-grow mb-4 border rounded-md p-4 h-[300px]">
-              {selectedGroup.messages.length > 0 ? (
+              {messages.length > 0 ? (
                 <div className="space-y-4">
-                  {selectedGroup.messages.map((msg) => (
-                    <div key={msg.id} className="flex flex-col">
+                  {messages.map((msg) => (
+                    <div 
+                      key={msg.id} 
+                      className={`flex flex-col ${msg.author === username ? 'items-end' : 'items-start'}`}
+                    >
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{msg.author}</span>
+                        <span className="font-medium text-xs">{msg.author}</span>
                         <span className="text-xs text-muted-foreground">{msg.timestamp}</span>
                       </div>
-                      <p className="text-sm mt-1">{msg.content}</p>
+                      <div 
+                        className={`mt-1 p-2 rounded-lg max-w-[80%] ${
+                          msg.author === username 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-secondary text-secondary-foreground'
+                        }`}
+                      >
+                        <p className="text-sm">{msg.content}</p>
+                      </div>
                     </div>
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -170,9 +230,14 @@ const SupportGroupsModal: React.FC<SupportGroupsModalProps> = ({
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Type your message..."
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                className="flex-1"
               />
-              <Button onClick={handleSendMessage} disabled={!message.trim()}>
-                Send
+              <Button 
+                onClick={handleSendMessage} 
+                disabled={!message.trim()}
+                size="icon"
+              >
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
