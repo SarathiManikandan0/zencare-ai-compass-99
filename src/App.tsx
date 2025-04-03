@@ -21,10 +21,10 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/index" element={<Index />} />
@@ -36,8 +36,8 @@ const App = () => {
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </AnimatePresence>
-        </TooltipProvider>
+          </TooltipProvider>
+        </AnimatePresence>
       </BrowserRouter>
     </QueryClientProvider>
   );
