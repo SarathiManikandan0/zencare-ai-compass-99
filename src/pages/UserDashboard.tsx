@@ -6,6 +6,12 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import ConsultationModal from "@/components/ConsultationModal";
+import LoginQuestionsModal from "@/components/LoginQuestionsModal";
+import SupportGroupsModal from "@/components/SupportGroupsModal";
+import ResourcesModal from "@/components/ResourcesModal";
+import UserTaskManager from "@/components/UserTaskManager";
+import GoalSetter from "@/components/GoalSetter";
+import { getTasks, addTask, updateTask, deleteTask } from "@/services/api";
 
 // For mock data visualization
 import {
@@ -49,21 +55,21 @@ const recommendations = [
   },
 ];
 
-const goals = [
+const initialGoals = [
   {
-    id: 1,
+    id: "1",
     title: "Practice mindfulness meditation",
     target: "3 times this week",
     progress: 66,
   },
   {
-    id: 2,
+    id: "2",
     title: "Journal about feelings",
     target: "Daily",
     progress: 85,
   },
   {
-    id: 3,
+    id: "3",
     title: "Take a 30-minute walk",
     target: "5 times this week",
     progress: 40,
@@ -73,6 +79,25 @@ const goals = [
 const UserDashboard = () => {
   const [currentMood, setCurrentMood] = useState<number | null>(null);
   const [showConsultationModal, setShowConsultationModal] = useState(false);
+  const [showLoginQuestionsModal, setShowLoginQuestionsModal] = useState(true);
+  const [showSupportGroupsModal, setShowSupportGroupsModal] = useState(false);
+  const [showResourcesModal, setShowResourcesModal] = useState(false);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [goals, setGoals] = useState(initialGoals);
+
+  useEffect(() => {
+    // Fetch tasks when the component mounts
+    const fetchTasks = async () => {
+      try {
+        const tasksData = await getTasks();
+        setTasks(tasksData);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+    
+    fetchTasks();
+  }, []);
 
   const handleMoodSelect = (mood: number) => {
     setCurrentMood(mood);
@@ -85,6 +110,64 @@ const UserDashboard = () => {
     setShowConsultationModal(false);
     // For demo purposes, just log that the consultation was requested
     console.log("Consultation requested");
+  };
+
+  const handleLoginQuestions = (mood: number, challenges: string) => {
+    console.log("Login mood:", mood, "Challenges:", challenges);
+    setCurrentMood(mood);
+  };
+
+  const handleAddTask = async (description: string) => {
+    try {
+      const newTask = await addTask(description);
+      setTasks(prev => [...prev, newTask]);
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
+
+  const handleToggleTask = async (id: string, completed: boolean) => {
+    try {
+      await updateTask(id, completed);
+      setTasks(prev => 
+        prev.map(task => 
+          task.id === id ? { ...task, completed } : task
+        )
+      );
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      await deleteTask(id);
+      setTasks(prev => prev.filter(task => task.id !== id));
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const handleAddGoal = (title: string, target: string) => {
+    const newGoal = {
+      id: Date.now().toString(),
+      title,
+      target,
+      progress: 0
+    };
+    setGoals(prev => [...prev, newGoal]);
+  };
+
+  const handleUpdateGoalProgress = (id: string, progress: number) => {
+    setGoals(prev => 
+      prev.map(goal => 
+        goal.id === id ? { ...goal, progress } : goal
+      )
+    );
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    setGoals(prev => prev.filter(goal => goal.id !== id));
   };
 
   return (
@@ -129,7 +212,7 @@ const UserDashboard = () => {
               
               <div className="mt-6">
                 <h3 className="text-sm font-medium mb-3">How are you feeling today?</h3>
-                <div className="flex space-x-4">
+                <div className="flex flex-wrap gap-2">
                   {[1, 2, 3, 4, 5].map((mood) => (
                     <Button
                       key={mood}
@@ -174,6 +257,7 @@ const UserDashboard = () => {
               <Button 
                 className="w-full"
                 variant="outline"
+                onClick={() => setShowSupportGroupsModal(true)}
               >
                 Join Support Group
               </Button>
@@ -181,6 +265,7 @@ const UserDashboard = () => {
               <Button 
                 className="w-full"
                 variant="outline"
+                onClick={() => setShowResourcesModal(true)}
               >
                 Mental Health Resources
               </Button>
@@ -188,10 +273,25 @@ const UserDashboard = () => {
           </Card>
         </div>
         
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <UserTaskManager 
+            tasks={tasks}
+            onAddTask={handleAddTask}
+            onToggleTask={handleToggleTask}
+            onDeleteTask={handleDeleteTask}
+          />
+          
+          <GoalSetter 
+            goals={goals}
+            onAddGoal={handleAddGoal}
+            onUpdateProgress={handleUpdateGoalProgress}
+            onDeleteGoal={handleDeleteGoal}
+          />
+        </div>
+        
         <Tabs defaultValue="recommendations">
           <TabsList className="mb-4">
             <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-            <TabsTrigger value="goals">Goals</TabsTrigger>
             <TabsTrigger value="community">Community</TabsTrigger>
           </TabsList>
           
@@ -205,33 +305,16 @@ const UserDashboard = () => {
                       <p className="text-sm text-gray-500">{rec.type}</p>
                       <p className="mt-2">{rec.description}</p>
                     </div>
-                    <Button variant="outline">View</Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowResourcesModal(true)}
+                    >
+                      View
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
-          </TabsContent>
-          
-          <TabsContent value="goals" className="space-y-4">
-            {goals.map((goal) => (
-              <Card key={goal.id}>
-                <CardContent className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <h3 className="font-medium">{goal.title}</h3>
-                      <span className="text-sm text-gray-500">{goal.target}</span>
-                    </div>
-                    <Progress value={goal.progress} />
-                    <div className="text-right text-sm text-gray-500">
-                      {goal.progress}% complete
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <div className="flex justify-center">
-              <Button variant="outline">Set New Goal</Button>
-            </div>
           </TabsContent>
           
           <TabsContent value="community">
@@ -244,10 +327,30 @@ const UserDashboard = () => {
                   and provide a safe space for sharing and healing.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button variant="outline">Anxiety Support Group</Button>
-                  <Button variant="outline">Depression Support Group</Button>
-                  <Button variant="outline">Stress Management Group</Button>
-                  <Button variant="outline">Mindfulness Practice Group</Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowSupportGroupsModal(true)}
+                  >
+                    Anxiety Support Group
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowSupportGroupsModal(true)}
+                  >
+                    Depression Support Group
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowSupportGroupsModal(true)}
+                  >
+                    Stress Management Group
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowSupportGroupsModal(true)}
+                  >
+                    Mindfulness Practice Group
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -259,6 +362,22 @@ const UserDashboard = () => {
         isOpen={showConsultationModal}
         onClose={() => setShowConsultationModal(false)}
         onConsult={handleConsultNow}
+      />
+      
+      <LoginQuestionsModal
+        isOpen={showLoginQuestionsModal}
+        onClose={() => setShowLoginQuestionsModal(false)}
+        onSubmit={handleLoginQuestions}
+      />
+      
+      <SupportGroupsModal
+        isOpen={showSupportGroupsModal}
+        onClose={() => setShowSupportGroupsModal(false)}
+      />
+      
+      <ResourcesModal
+        isOpen={showResourcesModal}
+        onClose={() => setShowResourcesModal(false)}
       />
     </div>
   );
